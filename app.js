@@ -1,16 +1,18 @@
 // Firebase configuration
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+   const firebaseConfig = {
+  apiKey: "AIzaSyCh4TwsADp3u92HY5sShse4HBXqgZYrnDU",
+  authDomain: "iot-educational-kit-for-bas.firebaseapp.com",
+  projectId: "iot-educational-kit-for-bas",
+  storageBucket: "iot-educational-kit-for-bas.firebasestorage.app",
+  messagingSenderId: "1025862859032",
+  appId: "1:1025862859032:web:ec0f206c49205fceec466d",
+  measurementId: "G-3CJEQKZMX5"
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 // Define a function to update chart with new data
 function updateChart(chart, labels, data) {
@@ -62,3 +64,28 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchData();
     setInterval(fetchData, 10000); // Updates every 10 seconds
 });
+
+// Lighting Control
+function toggleLight(room, isOn) {
+    const status = isOn ? "ON" : "OFF";
+    alert(`The ${room} light is now ${status}`);
+    // Here, you would add code to actually control the light via an API or Firebase.
+}
+
+// Climate Control - Update Temperature Display and Chart
+function updateTemperature(value) {
+    document.getElementById('temperatureDisplay').textContent = value;
+
+    // Update temperature chart if using real data
+    // Add new temperature value to the chart here if you integrate a live sensor
+}
+
+// Security Control - Toggle Door Lock
+let isDoorLocked = true;
+
+function toggleDoorLock() {
+    isDoorLocked = !isDoorLocked;
+    document.getElementById('doorLockStatus').textContent = isDoorLocked ? "Locked" : "Unlocked";
+    alert(`The door is now ${isDoorLocked ? "locked" : "unlocked"}`);
+    // You can add Firebase or API code here to control the lock
+}
