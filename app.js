@@ -73,25 +73,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Lighting Control
 function toggleLight(room, isOn) {
-    const status = isOn ? "ON" : "OFF";
-    alert(`The ${room} light is now ${status}`);
-    // Here, you would add code to actually control the light via an API or Firebase.
+    // Logic to toggle the light on/off
+    console.log(`Turning ${isOn ? 'on' : 'off'} the light in ${room}`);
 }
 
-// Climate Control - Update Temperature Display and Chart
 function updateTemperature(value) {
-    document.getElementById('temperatureDisplay').textContent = value;
-
-    // Update temperature chart if using real data
-    // Add new temperature value to the chart here if you integrate a live sensor
+    // Update the temperature display
+    document.getElementById('temperatureDisplay').innerText = value;
+    // You may want to update the temperature chart here as well
 }
-
-// Security Control - Toggle Door Lock
-let isDoorLocked = true;
 
 function toggleDoorLock() {
-    isDoorLocked = !isDoorLocked;
-    document.getElementById('doorLockStatus').textContent = isDoorLocked ? "Locked" : "Unlocked";
-    alert(`The door is now ${isDoorLocked ? "locked" : "unlocked"}`);
-    // You can add Firebase or API code here to control the lock
+    const doorLockStatus = document.getElementById('doorLockStatus');
+    const isLocked = doorLockStatus.innerText === 'Locked';
+    doorLockStatus.innerText = isLocked ? 'Unlocked' : 'Locked';
 }
+
