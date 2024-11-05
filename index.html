@@ -3,23 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IoT Dashboard</title>
+    <title>Home Automation Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
    <h1>Home Automation Dashboard</h1>
+
+   <!-- Lighting Control Section -->
     <div class="card">
         <h2>Lighting Control</h2>
         <label>Living Room Light</label>
         <input type="checkbox" id="livingRoomLightToggle" onchange="toggleLight('livingRoom', this.checked)">
     </div>
 
+   <!-- Climate Control Section -->
     <div class="card">
         <h2>Climate Control</h2>
         <p>Temperature: <span id="temperatureDisplay">--</span>°C</p>
         <input type="range" id="temperatureSlider" min="16" max="30" oninput="updateTemperature(this.value)">
+        <canvas id="temperatureChart" width="400" height="200"></canvas>
     </div>
 
+   <!-- Security Section -->
     <div class="card">
         <h2>Security</h2>
         <p>Door Lock: <span id="doorLockStatus">Locked</span></p>
