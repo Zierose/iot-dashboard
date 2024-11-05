@@ -7,19 +7,25 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>My IoT Dashboard</h1>
-    <div id="chartContainer">
-        <canvas id="myChart" width="400" height="200"></canvas>
+   <h1>Home Automation Dashboard</h1>
+    <div class="card">
+        <h2>Lighting Control</h2>
+        <label>Living Room Light</label>
+        <input type="checkbox" id="livingRoomLightToggle" onchange="toggleLight('livingRoom', this.checked)">
     </div>
-    
-    <!-- Include Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
-    
-    <!-- Include Chart.js library -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Include your custom JavaScript file for dashboard logic -->
+
+    <div class="card">
+        <h2>Climate Control</h2>
+        <p>Temperature: <span id="temperatureDisplay">--</span>°C</p>
+        <input type="range" id="temperatureSlider" min="16" max="30" oninput="updateTemperature(this.value)">
+    </div>
+
+    <div class="card">
+        <h2>Security</h2>
+        <p>Door Lock: <span id="doorLockStatus">Locked</span></p>
+        <button onclick="toggleDoorLock()">Toggle Door Lock</button>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
