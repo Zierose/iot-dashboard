@@ -3,56 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Automation Dashboard</title>
+    <title>IoT Educational Kit for Building Automation</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-   <h1>Home Automation Dashboard</h1>
+    <h1>IoT Educational Kit for Building Automation</h1>
 
-   <!-- Lighting Control Section -->
-    <div class="card">
-        <h2>Lighting Control</h2>
-        <label>Living Room Light</label>
-        <input type="checkbox" id="livingRoomLightToggle" onchange="toggleLight('livingRoom', this.checked)">
+    <div class="dashboard-container">
+        <!-- Lighting Control Section -->
+        <div class="card">
+            <h2>Lighting Control</h2>
+            <label>Living Room Light</label>
+            <input type="checkbox" id="livingRoomLightToggle" onchange="toggleLight('livingRoom', this.checked)">
+        </div>
+
+        <!-- Climate Control Section -->
+        <div class="card">
+            <h2>Climate Control</h2>
+            <p>Temperature: <span id="temperatureDisplay">--</span>°C</p>
+            <input type="range" id="temperatureSlider" min="16" max="30" oninput="updateTemperature(this.value)">
+            <canvas id="temperatureChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Security Section -->
+        <div class="card">
+            <h2>Security</h2>
+            <p>Door Lock: <span id="doorLockStatus">Locked</span></p>
+            <button onclick="toggleDoorLock()">Toggle Door Lock</button>
+        </div>
     </div>
 
-   <!-- Climate Control Section -->
-    <div class="card">
-        <h2>Climate Control</h2>
-        <p>Temperature: <span id="temperatureDisplay">--</span>°C</p>
-        <input type="range" id="temperatureSlider" min="16" max="30" oninput="updateTemperature(this.value)">
-        <canvas id="temperatureChart" width="400" height="200"></canvas>
-    </div>
+    <!-- Firebase and Firestore Setup -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-   <!-- Security Section -->
-    <div class="card">
-        <h2>Security</h2>
-        <p>Door Lock: <span id="doorLockStatus">Locked</span></p>
-        <button onclick="toggleDoorLock()">Toggle Door Lock</button>
-    </div>
+    <script>
+        // Firebase configuration (Replace with your own config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-  <script>
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+        // Initialize Firebase and Firestore
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-  function toggleLight(room, isOn) {
-      console.log(`Turning ${isOn ? 'on' : 'off'} the light in ${room}`);
-      // Add logic to update the light status in your database
-  }
+        // Function to toggle light state
+        function toggleLight(room, state) {
+            console.log(`${room} light is ${state ? 'ON' : 'OFF'}`);
+            // Add Firebase update for lighting status
+            db.collection("devices").doc(room).set({ light: state });
+        }
 
-  function updateTemperature(value) {
-      document.getElementById('temperatureDisplay').innerText = value;
-      // Optionally update a chart here
-  }
+        // Function to update temperature
+        function updateTemperature(value) {
+            document.getElementById("temperatureDisplay").textContent = value;
+            // Update Firebase with the selected temperature
+            db.collection("climateControl").doc("temperature").set({ targetTemperature: value });
+        }
 
-  function toggleDoorLock() {
-      const doorLockStatus = document.getElementById('doorLockStatus');
-      const isLocked = doorLockStatus.innerText === 'Locked';
-      doorLockStatus.innerText = isLocked ? 'Unlocked' : 'Locked';
-      // Add logic to update the door lock status in your database
-  }
-</script>
+        // Function to toggle door lock status
+        function toggleDoorLock() {
+            const doorLockStatus = document.getElementById("doorLockStatus");
+            const isLocked = doorLockStatus.textContent === "Locked";
+            doorLockStatus.textContent = isLocked ? "Unlocked" : "Locked";
+            // Update Firebase with door lock status
+            db.collection("security").doc("doorLock").set({ locked: !isLocked });
+        }
 
+        // Temperature Chart (optional visualization)
+        const ctx = document.getElementById('temperatureChart').getContext('2d');
+        const temperatureChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], // Add timestamp or labels dynamically
+                datasets: [{
+                    label: 'Temperature',
+                    data: [], // Dynamically populate temperature readings
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'minute'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
 
+        // Function to dynamically update chart with temperature data (example)
+        function addTemperatureData(timestamp, temperature) {
+            temperatureChart.data.labels.push(timestamp);
+            temperatureChart.data.datasets[0].data.push(temperature);
+            temperatureChart.update();
+        }
+    </script>
 </body>
 </html>
