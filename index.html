@@ -14,36 +14,56 @@
         <div class="card">
             <h2>Lighting Control</h2>
             <label>Light 1</label>
-            <input type="checkbox" id="light1Toggle" onchange="toggleDevice('light1', this.checked)">
+            <button onclick="toggleDevice('light1', true)">ON</button>
+            <button onclick="toggleDevice('light1', false)">OFF</button>
+            
             <label>Light 2</label>
-            <input type="checkbox" id="light2Toggle" onchange="toggleDevice('light2', this.checked)">
+            <button onclick="toggleDevice('light2', true)">ON</button>
+            <button onclick="toggleDevice('light2', false)">OFF</button>
         </div>
 
         <!-- Fan Control -->
         <div class="card">
             <h2>Fan Control</h2>
             <label>Main Fan</label>
-            <input type="checkbox" id="fanToggle" onchange="toggleDevice('fan', this.checked)">
+            <button onclick="toggleDevice('fan', true)">ON</button>
+            <button onclick="toggleDevice('fan', false)">OFF</button>
+
             <label>Exhaust Fan</label>
-            <input type="checkbox" id="exhaustFanToggle" onchange="toggleDevice('exhaustFan', this.checked)">
+            <button onclick="toggleDevice('exhaustFan', true)">ON</button>
+            <button onclick="toggleDevice('exhaustFan', false)">OFF</button>
         </div>
 
         <!-- Socket Control -->
         <div class="card">
             <h2>Socket Control</h2>
             <label>Socket 1</label>
-            <input type="checkbox" id="socket1Toggle" onchange="toggleDevice('socket1', this.checked)">
+            <button onclick="toggleDevice('socket1', true)">ON</button>
+            <button onclick="toggleDevice('socket1', false)">OFF</button>
+
             <label>Socket 2</label>
-            <input type="checkbox" id="socket2Toggle" onchange="toggleDevice('socket2', this.checked)">
+            <button onclick="toggleDevice('socket2', true)">ON</button>
+            <button onclick="toggleDevice('socket2', false)">OFF</button>
+
             <label>Socket 3</label>
-            <input type="checkbox" id="socket3Toggle" onchange="toggleDevice('socket3', this.checked)">
+            <button onclick="toggleDevice('socket3', true)">ON</button>
+            <button onclick="toggleDevice('socket3', false)">OFF</button>
         </div>
 
         <!-- Air Conditioner Control -->
         <div class="card">
             <h2>Air Conditioner Control</h2>
             <label>Air Conditioner</label>
-            <input type="checkbox" id="acToggle" onchange="toggleDevice('ac', this.checked)">
+            <button onclick="toggleDevice('ac', true)">ON</button>
+            <button onclick="toggleDevice('ac', false)">OFF</button>
+        </div>
+
+         <!-- Environmental Monitoring -->
+        <div class="card">
+            <h2>Environmental Monitoring</h2>
+            <p>Temperature: <span id="temperature">Loading...</span> °C</p>
+            <p>Humidity: <span id="humidity">Loading...</span> %</p>
+            <p>Gas Level: <span id="gasLevel">Loading...</span></p>
         </div>
     </div>
 
@@ -52,7 +72,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 
     <script>
-        // Firebase configuration (Replace with your own config)
+        // Firebase configuration (Replace with your actual config)
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -81,7 +101,8 @@
                 db.collection("devices").doc(device).get()
                 .then(doc => {
                     if (doc.exists) {
-                        document.getElementById(`${device}Toggle`).checked = doc.data().state;
+                        const isOn = doc.data().state;
+                        document.getElementById(`${device}Toggle`).textContent = isOn ? 'ON' : 'OFF';
                     } else {
                         console.log(`${device} not found in Firestore`);
                     }
@@ -91,6 +112,24 @@
 
         // Load initial states when page loads
         window.onload = loadDeviceStates;
+
+        // Function to load sensor data from Firestore
+        function loadSensorData() {
+            db.collection("sensors").doc("temperature").onSnapshot((doc) => {
+                document.getElementById("temperature").textContent = doc.data().temperature.toFixed(1);
+            });
+
+            db.collection("sensors").doc("humidity").onSnapshot((doc) => {
+                document.getElementById("humidity").textContent = doc.data().humidity.toFixed(1);
+            });
+
+            db.collection("sensors").doc("gasLevel").onSnapshot((doc) => {
+                document.getElementById("gasLevel").textContent = doc.data().gasLevel;
+            });
+        }
+
+        // Load initial states when page loads
+        window.onload = loadSensorData;
     </script>
 </body>
 </html>
