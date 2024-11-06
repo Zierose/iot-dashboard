@@ -1,11 +1,8 @@
-// Import the functions you need from the SDKs you need
+// Import necessary Firebase functions
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCh4TwsADp3u92HY5sShse4HBXqgZYrnDU",
   authDomain: "iot-educational-kit-for-bas.firebaseapp.com",
@@ -16,76 +13,57 @@ const firebaseConfig = {
   measurementId: "G-3CJEQKZMX5"
 };
 
-// Initialize Firebase
+// Initialize Firebase and Firestore
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const db = getFirestore(app);
 
-// Define a function to update chart with new data
-function updateChart(chart, labels, data) {
-    chart.data.labels = labels;
-    chart.data.datasets[0].data = data;
-    chart.update();
-}
+// Devices list (relay switches) with initial UI labels and Firestore document IDs
+const devices = [
+  { label: 'Light 1', id: 'light1' },
+  { label: 'Light 2', id: 'light2' },
+  { label: 'Fan', id: 'fan' },
+  { label: 'Exhaust Fan', id: 'exhaustFan' },
+  { label: 'Socket 1', id: 'socket1' },
+  { label: 'Socket 2', id: 'socket2' },
+  { label: 'Socket 3', id: 'socket3' },
+  { label: 'Air Conditioner', id: 'ac' }
+];
 
-// Create the chart once the page is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    const ctx = document.getElementById('myChart').getContext('2d');
-    const myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: [], // Will be updated with data
-            datasets: [{
-                label: 'Sensor Data',
-                data: [], // Will be updated with data
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
+// Initialize UI and add switch elements
+document.addEventListener("DOMContentLoaded", () => {
+  const dashboardContainer = document.querySelector(".dashboard-container");
+
+  devices.forEach(device => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h2>${device.label}</h2>
+      <label>
+        <input type="checkbox" id="${device.id}-toggle" onchange="toggleDevice('${device.id}', this.checked)">
+        ${device.label} Control
+      </label>
+      <p>Status: <span id="${device.id}-status">--</span></p>
+    `;
+    dashboardContainer.appendChild(card);
+
+    // Set up real-time listener for each device
+    const deviceRef = doc(db, "devices", device.id);
+    onSnapshot(deviceRef, (doc) => {
+      const data = doc.data();
+      const isOn = data && data.state;
+      document.getElementById(`${device.id}-toggle`).checked = isOn;
+      document.getElementById(`${device.id}-status`).innerText = isOn ? "On" : "Off";
     });
-
-    // Fetch data from Firebase Firestore and update the chart
-    function fetchData() {
-        db.collection("iotData").get().then((querySnapshot) => {
-            const labels = [];
-            const data = [];
-            querySnapshot.forEach((doc) => {
-                const record = doc.data();
-                labels.push(record.timestamp); // Adjust as needed for your data
-                data.push(record.value); // Adjust as needed for your data
-            });
-            // Update the chart with the fetched data
-            updateChart(myChart, labels, data);
-        });
-    }
-
-    // Call fetchData initially and then set it to refresh every 10 seconds
-    fetchData();
-    setInterval(fetchData, 10000); // Updates every 10 seconds
+  });
 });
 
-// Lighting Control
-function toggleLight(room, isOn) {
-    // Logic to toggle the light on/off
-    console.log(`Turning ${isOn ? 'on' : 'off'} the light in ${room}`);
-}
-
-function updateTemperature(value) {
-    // Update the temperature display
-    document.getElementById('temperatureDisplay').innerText = value;
-    // You may want to update the temperature chart here as well
-}
-
-function toggleDoorLock() {
-    const doorLockStatus = document.getElementById('doorLockStatus');
-    const isLocked = doorLockStatus.innerText === 'Locked';
-    doorLockStatus.innerText = isLocked ? 'Unlocked' : 'Locked';
-}
-
+// Function to toggle each device
+window.toggleDevice = async (deviceId, isOn) => {
+  try {
+    const deviceRef = doc(db, "devices", deviceId);
+    await setDoc(deviceRef, { state: isOn });
+    console.log(`Successfully toggled ${deviceId} to ${isOn ? "On" : "Off"}`);
+  } catch (error) {
+    console.error("Error updating device state: ", error);
+  }
+};
