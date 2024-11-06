@@ -10,33 +10,46 @@
     <h1>IoT Educational Kit for Building Automation</h1>
 
     <div class="dashboard-container">
-        <!-- Lighting Control Section -->
+        <!-- Lighting Control -->
         <div class="card">
             <h2>Lighting Control</h2>
-            <label>Living Room Light</label>
-            <input type="checkbox" id="livingRoomLightToggle" onchange="toggleLight('livingRoom', this.checked)">
+            <label>Light 1</label>
+            <input type="checkbox" id="light1Toggle" onchange="toggleDevice('light1', this.checked)">
+            <label>Light 2</label>
+            <input type="checkbox" id="light2Toggle" onchange="toggleDevice('light2', this.checked)">
         </div>
 
-        <!-- Climate Control Section -->
+        <!-- Fan Control -->
         <div class="card">
-            <h2>Climate Control</h2>
-            <p>Temperature: <span id="temperatureDisplay">--</span>°C</p>
-            <input type="range" id="temperatureSlider" min="16" max="30" oninput="updateTemperature(this.value)">
-            <canvas id="temperatureChart" width="400" height="200"></canvas>
+            <h2>Fan Control</h2>
+            <label>Main Fan</label>
+            <input type="checkbox" id="fanToggle" onchange="toggleDevice('fan', this.checked)">
+            <label>Exhaust Fan</label>
+            <input type="checkbox" id="exhaustFanToggle" onchange="toggleDevice('exhaustFan', this.checked)">
         </div>
 
-        <!-- Security Section -->
+        <!-- Socket Control -->
         <div class="card">
-            <h2>Security</h2>
-            <p>Door Lock: <span id="doorLockStatus">Locked</span></p>
-            <button onclick="toggleDoorLock()">Toggle Door Lock</button>
+            <h2>Socket Control</h2>
+            <label>Socket 1</label>
+            <input type="checkbox" id="socket1Toggle" onchange="toggleDevice('socket1', this.checked)">
+            <label>Socket 2</label>
+            <input type="checkbox" id="socket2Toggle" onchange="toggleDevice('socket2', this.checked)">
+            <label>Socket 3</label>
+            <input type="checkbox" id="socket3Toggle" onchange="toggleDevice('socket3', this.checked)">
+        </div>
+
+        <!-- Air Conditioner Control -->
+        <div class="card">
+            <h2>Air Conditioner Control</h2>
+            <label>Air Conditioner</label>
+            <input type="checkbox" id="acToggle" onchange="toggleDevice('ac', this.checked)">
         </div>
     </div>
 
     <!-- Firebase and Firestore Setup -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         // Firebase configuration (Replace with your own config)
@@ -53,64 +66,31 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Function to toggle light state
-        function toggleLight(room, state) {
-            console.log(`${room} light is ${state ? 'ON' : 'OFF'}`);
-            // Add Firebase update for lighting status
-            db.collection("devices").doc(room).set({ light: state });
+        // Function to toggle device status and save to Firebase
+        function toggleDevice(device, state) {
+            console.log(`${device} is ${state ? 'ON' : 'OFF'}`);
+            db.collection("devices").doc(device).set({ state: state })
+            .then(() => console.log(`${device} state updated in Firestore`))
+            .catch(error => console.error("Error updating state:", error));
         }
 
-        // Function to update temperature
-        function updateTemperature(value) {
-            document.getElementById("temperatureDisplay").textContent = value;
-            // Update Firebase with the selected temperature
-            db.collection("climateControl").doc("temperature").set({ targetTemperature: value });
-        }
-
-        // Function to toggle door lock status
-        function toggleDoorLock() {
-            const doorLockStatus = document.getElementById("doorLockStatus");
-            const isLocked = doorLockStatus.textContent === "Locked";
-            doorLockStatus.textContent = isLocked ? "Unlocked" : "Locked";
-            // Update Firebase with door lock status
-            db.collection("security").doc("doorLock").set({ locked: !isLocked });
-        }
-
-        // Temperature Chart (optional visualization)
-        const ctx = document.getElementById('temperatureChart').getContext('2d');
-        const temperatureChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [], // Add timestamp or labels dynamically
-                datasets: [{
-                    label: 'Temperature',
-                    data: [], // Dynamically populate temperature readings
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: 'minute'
-                        }
-                    },
-                    y: {
-                        beginAtZero: false
+        // Function to load initial states from Firestore
+        function loadDeviceStates() {
+            const devices = ['light1', 'light2', 'fan', 'exhaustFan', 'socket1', 'socket2', 'socket3', 'ac'];
+            devices.forEach(device => {
+                db.collection("devices").doc(device).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        document.getElementById(`${device}Toggle`).checked = doc.data().state;
+                    } else {
+                        console.log(`${device} not found in Firestore`);
                     }
-                }
-            }
-        });
-
-        // Function to dynamically update chart with temperature data (example)
-        function addTemperatureData(timestamp, temperature) {
-            temperatureChart.data.labels.push(timestamp);
-            temperatureChart.data.datasets[0].data.push(temperature);
-            temperatureChart.update();
+                }).catch(error => console.error("Error fetching state:", error));
+            });
         }
+
+        // Load initial states when page loads
+        window.onload = loadDeviceStates;
     </script>
 </body>
 </html>
