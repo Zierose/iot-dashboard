@@ -38,10 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     card.className = "card";
     card.innerHTML = `
       <h2>${device.label}</h2>
-      <label>
-        <input type="checkbox" id="${device.id}-toggle" onchange="toggleDevice('${device.id}', this.checked)">
-        ${device.label} Control
-      </label>
+      <button id="${device.id}-toggle" onclick="toggleDevice('${device.id}')">Toggle</button>
       <p>Status: <span id="${device.id}-status">--</span></p>
     `;
     dashboardContainer.appendChild(card);
@@ -51,18 +48,24 @@ document.addEventListener("DOMContentLoaded", () => {
     onSnapshot(deviceRef, (doc) => {
       const data = doc.data();
       const isOn = data && data.state;
-      document.getElementById(`${device.id}-toggle`).checked = isOn;
+      const toggleButton = document.getElementById(`${device.id}-toggle`);
+      toggleButton.innerText = isOn ? "Turn Off" : "Turn On";
       document.getElementById(`${device.id}-status`).innerText = isOn ? "On" : "Off";
     });
   });
 });
 
 // Function to toggle each device
-window.toggleDevice = async (deviceId, isOn) => {
+window.toggleDevice = async (deviceId) => {
+  const deviceRef = doc(db, "devices", deviceId);
+
   try {
-    const deviceRef = doc(db, "devices", deviceId);
-    await setDoc(deviceRef, { state: isOn });
-    console.log(`Successfully toggled ${deviceId} to ${isOn ? "On" : "Off"}`);
+    const docSnapshot = await deviceRef.get();
+    const currentState = docSnapshot.data()?.state || false;
+    const newState = !currentState;
+
+    await setDoc(deviceRef, { state: newState });
+    console.log(`Successfully toggled ${deviceId} to ${newState ? "On" : "Off"}`);
   } catch (error) {
     console.error("Error updating device state: ", error);
   }
